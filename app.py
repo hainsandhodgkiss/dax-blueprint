@@ -2,31 +2,56 @@ import streamlit as st
 import pandas as pd
 from streamlit_lightweight_charts import renderLightweightCharts
 
-# 1. Load your data
+st.set_page_config(layout="wide")
+
 @st.cache_data
 def load_data():
-    return pd.read_csv("DAX_Cash_2024.csv") # Ensure your CSV matches this name
+    df = pd.read_csv("DAX_Cash_2026.csv", sep=';')
+    df.columns = df.columns.str.strip()
+    for col in ['Open', 'High', 'Low', 'Close']:
+        df[col] = pd.to_numeric(df[col], errors='coerce')
+    
+    # Calculate values
+    df['body_size'] = (df['Close'] - df['Open']).abs().round(2)
+    df['range_size'] = (df['High'] - df['Low']).round(2)
+    
+    df['dt_obj'] = pd.to_datetime(df['Date'] + ' ' + df['Time'], dayfirst=True)
+    df['time'] = df['dt_obj'].apply(lambda x: int(x.timestamp()))
+    return df.dropna()
 
-df = load_data()
-
-# 2. Setup the chart layout
-st.title("DAX Blueprint Engine")
-
-# This is where the rendering happens
-renderLightweightCharts([
-    {
-        "chart": {
-            "width": 800,
-            "height": 400,
-            "layout": {"backgroundColor": "#131722", "textColor": "#d1d4dc"},
-            "grid": {"vertLines": {"color": "#334155"}, "horizLines": {"color": "#334155"}},
-            "priceScale": {"borderColor": "#555"},
-        },
-        "series": [
-            {
+try:
+    df = load_data()
+    selected_date = st.sidebar.selectbox("Select Date", df['Date'].unique())
+    plot_df = df[df['Date'] == selected_date].copy()
+    
+    # Map to list of dicts
+    chart_data = []
+    for _, row in plot_df.iterrows():
+        chart_data.append({
+            "time": row['time'],
+            "open": row['Open'],
+            "high": row['High'],
+            "low": row['Low'],
+            "close": row['Close'],
+            # This 'text' field is used by the chart to render labels above candles
+            "text": f"{row['body_size']}" 
+        })
+    
+    renderLightweightCharts([
+        {
+            "chart": {
+                "width": 1000, "height": 500,
+                "timeScale": {"timeVisible": True, "secondsVisible": False, "barSpacing": 15}
+            },
+            "series": [{
                 "type": "Candlestick",
-                "data": df.to_dict(orient="records") # Assumes CSV has columns: time, open, high, low, close
-            }
-        ],
-    }
-], "dax-chart")
+                "data": chart_data,
+                "options": {
+                    "priceLineVisible": True,
+                    "lastValueVisible": True
+                }
+            }]
+        }
+    ], key=f"dax-{selected_date}")
+except Exception as e:
+    st.error(f"Render Error: {e}")
