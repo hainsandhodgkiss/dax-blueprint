@@ -5,7 +5,7 @@ from streamlit_lightweight_charts import renderLightweightCharts
 
 st.set_page_config(layout="wide")
 
-# --- YOUR ESTABLISHED LOGIC ---
+# --- CORE FUNCTIONS ---
 def get_series_options():
     return {
         "upColor": "#26a63b", "downColor": "#ef5350",
@@ -39,19 +39,24 @@ def load_data():
     return df.dropna()
 
 # --- MAIN RENDERING ---
+df = load_data()
+date_list = list(df['Date'].unique())
+
+# Logic for target date
+target = st.session_state.get("target_date", date_list[0])
+default_idx = date_list.index(target) if target in date_list else 0
+
+# Selectbox
+selected_date = st.sidebar.selectbox("Select Date", date_list, index=default_idx)
+
+# Clear trigger
+if "target_date" in st.session_state:
+    del st.session_state.target_date
+
+# Rendering
 try:
-    df = load_data()
-    date_list = list(df['Date'].unique())
-    target = st.session_state.get("target_date", date_list[0])
-    default_idx = date_list.index(target) if target in date_list else 0
-    
-    selected_date = st.sidebar.selectbox("Select Date", date_list, index=default_idx)
-    if "target_date" in st.session_state:
-        del st.session_state.target_date
-    
     plot_df = df[df['Date'] == selected_date].copy()
     chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close'})[['time', 'open', 'high', 'low', 'close']].to_dict(orient="records")
-    
     st.title(f"DAX {selected_date} - 5 Minute Chart")
     threshold = st.sidebar.selectbox("Show candle numbers for size over:", [10, 15, 20, 25, 30, 35, 40])
     add_snapshot_button()
@@ -71,6 +76,7 @@ st.sidebar.markdown("---")
 st.sidebar.subheader("Data Event Playbook")
 selected_month = st.sidebar.selectbox("Select NFP Month:", list(nfp_playbook.get_nfp_data().keys()))
 event_dates = nfp_playbook.get_event_dates(selected_month)
+
 col1, col2, col3 = st.sidebar.columns(3)
 if col1.button("Pre"):
     st.session_state.target_date = event_dates['before']
