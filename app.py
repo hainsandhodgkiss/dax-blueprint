@@ -13,7 +13,7 @@ def get_series_options():
         "lastValueVisible": True
     }
    
-   def get_candle_markers(plot_df):
+   def get_candle_markers(plot_df): #  <--- CALL THE ADD-ON HERE
     markers = []
     for _, row in plot_df.iterrows():
         markers.append({
