@@ -3,6 +3,13 @@ import streamlit as st
 import pandas as pd
 from streamlit_lightweight_charts import renderLightweightCharts
 
+# --- CRITICAL: MUST BE AT THE TOP ---
+# This ensures that if a button was clicked, we set the date before the chart loads
+if "target_date" in st.session_state:
+    selected_date = st.session_state.target_date
+else:
+    selected_date = None # Will be handled by your default logic later
+    
 def get_series_options():
     return {
         "upColor": "#26a63b",
