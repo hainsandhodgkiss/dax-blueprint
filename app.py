@@ -20,11 +20,9 @@ def get_candle_markers(plot_df):
             "time": row['time'],
             "position": 'aboveBar',
             "color": '#26a69a' if row['Close'] >= row['Open'] else '#ef5350',
-            "text": str(row['body_size']),
-            "textStyle": {
-                "fontSize": 8,
-                "fontWeight": "bold"
-            }
+            "text": " ",         # Set the main text to an empty space
+            "title": str(row['body_size']) # Move the value to the title attribute
+            
         })
     return markers
 
