@@ -60,22 +60,15 @@ def load_data():
 
 try:
     df = load_data()
-    date_list = list(df['Date'].unique())
-    
-    # 1. Determine the date (Priority: Session State -> Default to list[0])
+   date_list = list(df['Date'].unique())
+
+    # Get the target from session state (if radio was clicked) or default to the first date
     target = st.session_state.get("target_date", date_list[0])
     
-    # 2. Force the selectbox to update to the target
-    # We find the index of our target, or default to 0
+    # Sync the selectbox index
     default_idx = date_list.index(target) if target in date_list else 0
-    
     selected_date = st.sidebar.selectbox("Select Date", date_list, index=default_idx)
     
-    # 3. If the user changed the date manually via dropdown, clear the session trigger
-    # This prevents the button-click from "getting stuck" in session state
-    if "target_date" in st.session_state:
-        del st.session_state.target_date
-        
     plot_df = df[df['Date'] == selected_date].copy()
    
     chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close'})[['time', 'open', 'high', 'low', 'close']].to_dict(orient="records")
@@ -107,6 +100,7 @@ try:
 except Exception as e:
     st.error(f"Render Error: {e}")
 
+# Bottom of app.py
 st.sidebar.markdown("---")
 st.sidebar.subheader("Data Event Playbook")
 selected_month = st.sidebar.selectbox("Select NFP Month:", list(nfp_playbook.get_nfp_data().keys()))
@@ -114,16 +108,14 @@ selected_month = st.sidebar.selectbox("Select NFP Month:", list(nfp_playbook.get
 event_dates = nfp_playbook.get_event_dates(selected_month)
 st.sidebar.write(f"**Analyzing {selected_month}:**")
 
-col1, col2, col3 = st.sidebar.columns(3)
-with col1:
-    if st.sidebar.button("Pre", key="btn_pre"):
-        st.session_state.target_date = event_dates['before']
-        st.rerun()
-with col2:
-    if st.sidebar.button("NFP", key="btn_nfp"):
-        st.session_state.target_date = event_dates['nfp']
-        st.rerun()
-with col3:
-    if st.sidebar.button("Post", key="btn_post"):
-        st.session_state.target_date = event_dates['after']
-        st.rerun()
+# Use radio buttons instead of regular buttons
+event_choice = st.sidebar.radio(
+    "Choose Date Window:",
+    options=[event_dates['before'], event_dates['nfp'], event_dates['after']],
+    format_func=lambda x: "Pre" if x == event_dates['before'] else ("NFP" if x == event_dates['nfp'] else "Post")
+)
+
+# If the user selects a radio option, set the session state and rerun
+if event_choice:
+    st.session_state.target_date = event_choice
+    st.rerun()
