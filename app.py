@@ -1,51 +1,31 @@
-import nfp_playbook  # Import your new module
+import nfp_playbook
 import streamlit as st
 import pandas as pd
 from streamlit_lightweight_charts import renderLightweightCharts
 
-# --- CRITICAL: MUST BE AT THE TOP ---
-# This ensures that if a button was clicked, we set the date before the chart loads
-if "target_date" in st.session_state:
-    selected_date = st.session_state.target_date
-else:
-    selected_date = None # Will be handled by your default logic later
+st.set_page_config(layout="wide")
 
+# --- YOUR ESTABLISHED LOGIC ---
 def get_series_options():
     return {
-        "upColor": "#26a63b",
-        "downColor": "#ef5350",
-        "wickUpColor": "#26a63b",
-        "wickDownColor": "#ef5350",
-        "borderVisible": False,
-        "priceLineVisible": True,
-        "lastValueVisible": True
+        "upColor": "#26a63b", "downColor": "#ef5350",
+        "wickUpColor": "#26a63b", "wickDownColor": "#ef5350",
+        "borderVisible": False, "priceLineVisible": True, "lastValueVisible": True
     }
 
 def get_candle_markers(plot_df, threshold):
     markers = []
     for _, row in plot_df.iterrows():
-        # Filter based on the dynamic threshold selected by the user
         if row['body_size'] >= threshold:
             markers.append({
-                "time": row['time'],
-                "position": 'aboveBar',
+                "time": row['time'], "position": 'aboveBar',
                 "color": '#26a69a' if row['Close'] >= row['Open'] else '#ef5350',
-                "shape": 'none',
-                "text": str(row['body_size'])
+                "shape": 'none', "text": str(row['body_size'])
             })
     return markers
 
 def add_snapshot_button():
-    # Streamlit doesn't natively "take a screenshot" of a JS component, 
-    # so we provide a link to the user to use their browser's print-to-file
-    # or use a screenshot utility.
-    st.sidebar.info("Tip: Use 'Print Screen' or Browser 'Save Page' to capture.")
-    if st.sidebar.button("Save chart as JPEG"):
-        st.sidebar.warning("Note: Lightweight Charts are rendered in a canvas. "
-                           "Right-click the chart area and select 'Save Image As' "
-                           "to download the current view directly.")
-                           
-st.set_page_config(layout="wide")
+    st.sidebar.info("Tip: Right-click chart to 'Save Image As'")
 
 @st.cache_data
 def load_data():
@@ -58,71 +38,46 @@ def load_data():
     df['time'] = df['dt_obj'].apply(lambda x: int(x.timestamp()))
     return df.dropna()
 
-   try:
+# --- MAIN RENDERING ---
+try:
     df = load_data()
     date_list = list(df['Date'].unique())
-    
-    # 1. Determine the target date
-    if "target_date" in st.session_state:
-        target = st.session_state.target_date
-        del st.session_state.target_date
-    else:
-        target = date_list[0]
-        
-    # 2. Sync the selectbox
+    target = st.session_state.get("target_date", date_list[0])
     default_idx = date_list.index(target) if target in date_list else 0
-    selected_date = st.sidebar.selectbox("Select Date", date_list, index=default_idx)
     
-    # 3. Proceed with plotting
+    selected_date = st.sidebar.selectbox("Select Date", date_list, index=default_idx)
+    if "target_date" in st.session_state:
+        del st.session_state.target_date
+    
     plot_df = df[df['Date'] == selected_date].copy()
     chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close'})[['time', 'open', 'high', 'low', 'close']].to_dict(orient="records")
     
-    # ... rest of your existing code (st.title, renderLightweightCharts, etc.)
-    # ADDED DYNAMIC TITLE
     st.title(f"DAX {selected_date} - 5 Minute Chart")
-    
-    # Sidebar control
-    threshold = st.sidebar.selectbox(
-        "Show candle numbers for size over:",
-        [10, 15, 20, 25, 30, 35, 40]
-    )
-    
-    # ADDED BUTTON
+    threshold = st.sidebar.selectbox("Show candle numbers for size over:", [10, 15, 20, 25, 30, 35, 40])
     add_snapshot_button()
     
     renderLightweightCharts([{
         "chart": {
-            "width": 1200, "height":700,
+            "width": 1200, "height": 700,
             "timeScale": {"timeVisible": True, "secondsVisible": False, "barSpacing": 40}
         },
-        "series": [{
-            "type": "Candlestick",
-            "data": chart_data,
-            "options": get_series_options(),
-            "markers": get_candle_markers(plot_df, threshold)
-        }]
+        "series": [{"type": "Candlestick", "data": chart_data, "options": get_series_options(), "markers": get_candle_markers(plot_df, threshold)}]
     }], key=f"dax-{selected_date}")
 except Exception as e:
     st.error(f"Render Error: {e}")
- # This section must start at the very beginning of the line (0 spaces)
+
+# --- PLAYBOOK ---
 st.sidebar.markdown("---")
 st.sidebar.subheader("Data Event Playbook")
 selected_month = st.sidebar.selectbox("Select NFP Month:", list(nfp_playbook.get_nfp_data().keys()))
-
-if st.sidebar.button("Load NFP Window"):
-    event_dates = nfp_playbook.get_event_dates(selected_month)
-    st.sidebar.write(f"**Analyzing {selected_month}:**")
-    
-    col1, col2, col3 = st.sidebar.columns(3)
-    with col1:
-        if st.button("Pre"):
-            st.session_state.target_date = event_dates['before']
-            st.rerun()
-    with col2:
-        if st.button("NFP"):
-            st.session_state.target_date = event_dates['nfp']
-            st.rerun()
-    with col3:
-        if st.button("Post"):
-            st.session_state.target_date = event_dates['after']
-            st.rerun()
+event_dates = nfp_playbook.get_event_dates(selected_month)
+col1, col2, col3 = st.sidebar.columns(3)
+if col1.button("Pre"):
+    st.session_state.target_date = event_dates['before']
+    st.rerun()
+if col2.button("NFP"):
+    st.session_state.target_date = event_dates['nfp']
+    st.rerun()
+if col3.button("Post"):
+    st.session_state.target_date = event_dates['after']
+    st.rerun()
