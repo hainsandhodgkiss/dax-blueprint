@@ -107,12 +107,14 @@ try:
     }], key=f"dax-{selected_date}")
 except Exception as e:
     st.error(f"Render Error: {e}")
- # This section must start at the very beginning of the line (0 spaces)
+
+# This section is outside the 'if' block so it is always visible
 st.sidebar.markdown("---")
 st.sidebar.subheader("Data Event Playbook")
 selected_month = st.sidebar.selectbox("Select NFP Month:", list(nfp_playbook.get_nfp_data().keys()))
 
-if st.sidebar.button("Load NFP Window"):
+# Use a placeholder to hold the event dates after the user selects a month
+if selected_month:
     event_dates = nfp_playbook.get_event_dates(selected_month)
     st.sidebar.write(f"**Analyzing {selected_month}:**")
     
