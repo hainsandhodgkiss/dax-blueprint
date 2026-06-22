@@ -15,6 +15,7 @@ def get_series_options():
 
 def get_candle_markers(plot_df):
     markers = []
+   
     # Calculate average body size for the current view to filter noise
     avg_body = plot_df['body_size'].mean()
     
@@ -24,7 +25,7 @@ def get_candle_markers(plot_df):
             markers.append({
                 "time": row['time'],
                 "position": 'aboveBar',
-                "color": 'transparent',
+                 "color": '#26a69a' if row['Close'] >= row['Open'] else '#ef5350',
                 "shape": 'none',
                 "text": str(row['body_size'])
             })
