@@ -17,15 +17,15 @@ def get_candle_markers(plot_df):
     markers = []
    
     # Calculate average body size for the current view to filter noise
-    avg_body = plot_df['body_size'].mean()
-    
+    def get_candle_markers(plot_df):
+    markers = []
     for _, row in plot_df.iterrows():
-        # Only add a marker if the candle is larger than average
-        if row['body_size'] > avg_body:
+        # Only show markers for candles with body_size 20 or greater
+        if row['body_size'] >= 20:
             markers.append({
                 "time": row['time'],
                 "position": 'aboveBar',
-                 "color": '#26a69a' if row['Close'] >= row['Open'] else '#ef5350',
+                "color": '#26a69a' if row['Close'] >= row['Open'] else '#ef5350',
                 "shape": 'none',
                 "text": str(row['body_size'])
             })
