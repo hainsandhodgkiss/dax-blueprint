@@ -93,7 +93,7 @@ if show_school_run and timeframe == "15min":
             {"price": sr_low, "color": "red", "lineWidth": 2, "lineStyle": 0, "axisLabelVisible": True, "title": "SR Low"}
         ]
 # -------------------------
-
+st.write(f"DEBUG: School Run Lines: {school_run_lines}")
 renderLightweightCharts([{
     "chart": {
         "width": 1200, "height": 700,
