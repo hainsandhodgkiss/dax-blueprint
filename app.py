@@ -94,7 +94,8 @@ try:
     }], key=f"dax-{selected_date}")
 except Exception as e:
     st.error(f"Render Error: {e}")
-   st.sidebar.markdown("---")
+ # This section must start at the very beginning of the line (0 spaces)
+st.sidebar.markdown("---")
 st.sidebar.subheader("Data Event Playbook")
 selected_month = st.sidebar.selectbox("Select NFP Month:", list(nfp_playbook.get_nfp_data().keys()))
 
@@ -102,15 +103,16 @@ if st.sidebar.button("Load NFP Window"):
     event_dates = nfp_playbook.get_event_dates(selected_month)
     st.sidebar.write(f"**Analyzing {selected_month}:**")
     
-    # Create clickable buttons for each date
-    if st.sidebar.button(f"Pre-NFP: {event_dates['before']}"):
-        st.session_state.target_date = event_dates['before']
-        st.rerun()
-        
-    if st.sidebar.button(f"NFP Day: {event_dates['nfp']}"):
-        st.session_state.target_date = event_dates['nfp']
-        st.rerun()
-        
-    if st.sidebar.button(f"Post-NFP: {event_dates['after']}"):
-        st.session_state.target_date = event_dates['after']
-        st.rerun()
+    col1, col2, col3 = st.sidebar.columns(3)
+    with col1:
+        if st.button("Pre"):
+            st.session_state.target_date = event_dates['before']
+            st.rerun()
+    with col2:
+        if st.button("NFP"):
+            st.session_state.target_date = event_dates['nfp']
+            st.rerun()
+    with col3:
+        if st.button("Post"):
+            st.session_state.target_date = event_dates['after']
+            st.rerun()
