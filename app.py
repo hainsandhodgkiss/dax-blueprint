@@ -53,22 +53,19 @@ st.sidebar.markdown("---")
 # 2. LOGIC (Handle Resampling and Lines)
 school_run_lines = []
 
-if timeframe == "15min":
-    resampled = plot_df.resample('15min', on='dt_obj').agg({
-        'Open': 'first', 'High': 'max', 'Low': 'min', 'Close': 'last'
-    }).dropna()
-    
-    plot_df = resampled.reset_index().rename(columns={'dt_obj': 'time'})
-    plot_df['time'] = plot_df['time'].apply(lambda x: int(x.timestamp()))
-    plot_df['body_size'] = (plot_df['Close'] - plot_df['Open']).abs().round(2)
-    
-    if show_school_run:
-        if len(plot_df) >= 2:
-            second_candle = plot_df.iloc[1]
-            school_run_lines = [
-                {"price": float(second_candle['High']) + 2.0, "color": "#ff0000", "lineWidth": 2, "lineStyle": 0, "axisLabelVisible": True, "title": "SR High"},
-                {"price": float(second_candle['Low']) - 2.0, "color": "#ff0000", "lineWidth": 2, "lineStyle": 0, "axisLabelVisible": True, "title": "SR Low"}
-            ]
+if timeframe == "15min" and show_school_run:
+    if len(plot_df) >= 2:
+        # Grab the 2nd candle (index 1)
+        second_candle = plot_df.iloc[1]
+        sr_high = float(second_candle['High']) + 2.0
+        sr_low = float(second_candle['Low']) - 2.0
+        
+        school_run_lines = [
+            {"price": sr_high, "color": "#ff0000", "lineWidth": 2, "lineStyle": 2, "axisLabelVisible": True, "title": "SR High"},
+            {"price": sr_low, "color": "#ff0000", "lineWidth": 2, "lineStyle": 2, "axisLabelVisible": True, "title": "SR Low"}
+        ]
+        # Debug to console/app to verify math
+        st.sidebar.write(f"Lines: High={sr_high}, Low={sr_low}")
 
 # 3. PREPARE CHART DATA
 chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close'})[['time', 'open', 'high', 'low', 'close']].to_dict(orient="records")
