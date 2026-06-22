@@ -45,7 +45,7 @@ try:
     
     renderLightweightCharts([{
         "chart": {
-            "width": 1400, "height":700,
+            "width": 1200, "height":700,
             "timeScale": {"timeVisible": True, "secondsVisible": False, "barSpacing": 40}
         },
         "series": [{
