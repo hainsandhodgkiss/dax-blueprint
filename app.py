@@ -55,6 +55,9 @@ try:
     selected_date = st.sidebar.selectbox("Select Date", df['Date'].unique())
     plot_df = df[df['Date'] == selected_date].copy()
     chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close'})[['time', 'open', 'high', 'low', 'close']].to_dict(orient="records")
+   
+    # ADDED DYNAMIC TITLE
+    st.title(f"DAX {selected_date} - 5 Minute Chart")
     
     # Sidebar control
     threshold = st.sidebar.selectbox(
