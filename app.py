@@ -14,7 +14,7 @@ def get_series_options():
     }
    
    def get_candle_markers(plot_df):
-    markers = [] 
+    markers = []
     for _, row in plot_df.iterrows():
         markers.append({
             "time": row['time'],
