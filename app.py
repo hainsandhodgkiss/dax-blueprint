@@ -77,6 +77,23 @@ if st.sidebar.button("Load NFP Window"):
 
 add_snapshot_button()
 
+# --- SCHOOL RUN LOGIC ---
+show_school_run = st.sidebar.checkbox("Show School Run (2nd 15m candle)")
+school_run_lines = []
+
+if show_school_run and timeframe == "15min":
+    # Ensure we have at least 2 candles
+    if len(plot_df) >= 2:
+        second_candle = plot_df.iloc[1] # Index 1 is the 2nd candle
+        sr_high = float(second_candle['High'])
+        sr_low = float(second_candle['Low'])
+        
+        school_run_lines = [
+            {"price": sr_high, "color": "red", "lineWidth": 2, "lineStyle": 0, "axisLabelVisible": True, "title": "SR High"},
+            {"price": sr_low, "color": "red", "lineWidth": 2, "lineStyle": 0, "axisLabelVisible": True, "title": "SR Low"}
+        ]
+# -------------------------
+
 renderLightweightCharts([{
     "chart": {
         "width": 1200, "height": 700,
