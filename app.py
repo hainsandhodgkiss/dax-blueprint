@@ -12,22 +12,19 @@ def get_series_options():
         "priceLineVisible": True,
         "lastValueVisible": True
     }
+   
    def get_candle_markers(plot_df):
-    """Generates markers to display body_size above/below candles."""
     markers = []
     for _, row in plot_df.iterrows():
-        # Place marker above/below based on candle direction
-        position = 'aboveBar'
-        color = '#26a69a' if row['Close'] >= row['Open'] else '#ef5350'
-        
         markers.append({
             "time": row['time'],
-            "position": position,
-            "color": color,
+            "position": 'aboveBar',
+            "color": '#26a69a' if row['Close'] >= row['Open'] else '#ef5350',
             "shape": 'circle',
             "text": str(row['body_size'])
         })
     return markers
+    
 st.set_page_config(layout="wide")
 
 @st.cache_data
