@@ -109,7 +109,7 @@ chart_data_dicts = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low'
 # Create the chart component
 chart = renderLightweightCharts([{
     "chart": {
-        "width": 1250, "height": 700,
+        "width": 1200, "height": 700,
         "timeScale": {"timeVisible": True, "secondsVisible": False, "barSpacing": 40}
     },
     "series": [
