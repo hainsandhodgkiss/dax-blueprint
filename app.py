@@ -50,9 +50,8 @@ show_school_run = st.sidebar.checkbox("Show School Run (2nd 15m candle)", key="s
 threshold = st.sidebar.selectbox("Show candle numbers for size over:", [10, 15, 20, 25, 30, 35, 40])
 st.sidebar.markdown("---")
 
-# 2. LOGIC (Handle Resampling and Lines)
+
 # --- LOGIC ---
-# 2. LOGIC (Handle Resampling and Lines)
 plot_df = df[df['Date'] == selected_date].copy()
 school_run_lines = []
 sr_series = []
@@ -93,8 +92,6 @@ if timeframe == "15min":
 # 3. PREPARE CHART DATA
 chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close'})[['time', 'open', 'high', 'low', 'close']].to_dict(orient="records")
 
-# 4. RENDER
-st.title(f"DAX {selected_date} - {timeframe} Chart")
 # 4. RENDER
 st.title(f"DAX {selected_date} - {timeframe} Chart")
 
