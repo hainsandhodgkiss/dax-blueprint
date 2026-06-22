@@ -12,7 +12,7 @@ def get_series_options():
         "priceLineVisible": True,
         "lastValueVisible": True
     }
-    def get_candle_markers(plot_df):
+   def get_candle_markers(plot_df):
     """Generates markers to display body_size above/below candles."""
     markers = []
     for _, row in plot_df.iterrows():
