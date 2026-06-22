@@ -44,14 +44,18 @@ df = load_data()
 selected_date = st.sidebar.selectbox("Select Date", df['Date'].unique())
 plot_df = df[df['Date'] == selected_date].copy()
 
-# 1. UI INPUTS (Define these BEFORE the chart is rendered)
+# ==========================================
+# ZONE 1: UI INPUTS (Before anything else)
+# ==========================================
 timeframe = st.sidebar.radio("Select Timeframe:", ["5min", "15min"], horizontal=True)
 show_school_run = st.sidebar.checkbox("Show School Run (2nd 15m candle)", key="sr_toggle")
 threshold = st.sidebar.selectbox("Show candle numbers for size over:", [10, 15, 20, 25, 30, 35, 40])
 st.sidebar.markdown("---")
 
 
-# --- LOGIC ---
+# ==========================================
+# ZONE 2: LOGIC (Math & Calculations)
+# ==========================================
 plot_df = df[df['Date'] == selected_date].copy()
 school_run_lines = []
 sr_series = []
@@ -89,10 +93,14 @@ if timeframe == "15min":
             })
         st.sidebar.write(f"Lines: High={school_run_lines[0]['price']}, Low={school_run_lines[1]['price']}")
 
-# 3. PREPARE CHART DATA
+# ==========================================
+# ZONE 3: PREPARE CHART DATA
+# ==========================================
 chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close'})[['time', 'open', 'high', 'low', 'close']].to_dict(orient="records")
 
-# 4. RENDER
+# ==========================================
+# ZONE 4: RENDER
+# ==========================================
 st.title(f"DAX {selected_date} - {timeframe} Chart")
 
 # We render the chart first
@@ -101,7 +109,7 @@ chart_data_dicts = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low'
 # Create the chart component
 chart = renderLightweightCharts([{
     "chart": {
-        "width": 1200, "height": 700,
+        "width": 1250, "height": 700,
         "timeScale": {"timeVisible": True, "secondsVisible": False, "barSpacing": 40}
     },
     "series": [
