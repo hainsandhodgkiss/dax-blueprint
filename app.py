@@ -55,7 +55,21 @@ st.sidebar.markdown("---")
 # 1. Start by resetting to the original selected date
 plot_df = df[df['Date'] == selected_date].copy()
 school_run_lines = []
-
+sr_series = []
+if show_school_run and timeframe == "15min" and len(school_run_lines) > 0:
+    for line in school_run_lines:
+        sr_series.append({
+            "type": "Line",
+            "data": [{"time": int(t), "value": float(line['price'])} for t in plot_df['time']],
+            "options": {
+                "color": line['color'],
+                "lineWidth": line['lineWidth'],
+                "lineStyle": 2, 
+                "title": line['title'],
+                "lastValueVisible": True,
+                "priceLineVisible": True
+            }
+        })
 # 2. Apply resampling ONLY if 15min is selected
 if timeframe == "15min":
     resampled = plot_df.resample('15min', on='dt_obj').agg({
@@ -92,22 +106,13 @@ chart = renderLightweightCharts([{
         "width": 1200, "height": 700,
         "timeScale": {"timeVisible": True, "secondsVisible": False, "barSpacing": 40}
     },
-    "series": [{
-        "type": "Candlestick",
-        "data": chart_data_dicts,
-        "options": {**get_series_options()},
-        "markers": get_candle_markers(plot_df, threshold)
-    }]
+    "series": [
+        {
+            "type": "Candlestick",
+            "data": chart_data,
+            "options": {**get_series_options()},
+            "markers": get_candle_markers(plot_df, threshold)
+        },
+        *sr_series  # This adds the lines as an extra layer
+    ]
 }], key=f"dax-{selected_date}-{timeframe}")
-
-# Now, forcefully inject the lines using the API
-if show_school_run and timeframe == "15min" and len(school_run_lines) > 0:
-    for line in school_run_lines:
-        chart.create_price_line({
-            "price": float(line['price']),
-            "color": line['color'],
-            "lineWidth": line['lineWidth'],
-            "lineStyle": line['lineStyle'],
-            "axisLabelVisible": True,
-            "title": line['title']
-        })
