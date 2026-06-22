@@ -107,26 +107,23 @@ try:
 except Exception as e:
     st.error(f"Render Error: {e}")
 
-# This section is outside the 'if' block so it is always visible
 st.sidebar.markdown("---")
 st.sidebar.subheader("Data Event Playbook")
 selected_month = st.sidebar.selectbox("Select NFP Month:", list(nfp_playbook.get_nfp_data().keys()))
 
-# Use a placeholder to hold the event dates after the user selects a month
-if selected_month:
-    event_dates = nfp_playbook.get_event_dates(selected_month)
-    st.sidebar.write(f"**Analyzing {selected_month}:**")
-    
-    col1, col2, col3 = st.sidebar.columns(3)
-    with col1:
-        if st.button("Pre"):
-            st.session_state.target_date = event_dates['before']
-            st.rerun()
-    with col2:
-        if st.button("NFP"):
-            st.session_state.target_date = event_dates['nfp']
-            st.rerun()
-    with col3:
-        if st.button("Post"):
-            st.session_state.target_date = event_dates['after']
-            st.rerun()
+event_dates = nfp_playbook.get_event_dates(selected_month)
+st.sidebar.write(f"**Analyzing {selected_month}:**")
+
+col1, col2, col3 = st.sidebar.columns(3)
+with col1:
+    if st.sidebar.button("Pre", key="btn_pre"):
+        st.session_state.target_date = event_dates['before']
+        st.rerun()
+with col2:
+    if st.sidebar.button("NFP", key="btn_nfp"):
+        st.session_state.target_date = event_dates['nfp']
+        st.rerun()
+with col3:
+    if st.sidebar.button("Post", key="btn_post"):
+        st.session_state.target_date = event_dates['after']
+        st.rerun()
