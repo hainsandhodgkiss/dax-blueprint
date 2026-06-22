@@ -102,7 +102,10 @@ renderLightweightCharts([{
     "series": [{
         "type": "Candlestick",
         "data": chart_data,
-        "options": get_series_options(),
+        "options": {
+            **get_series_options(), 
+            "priceLines": school_run_lines # This must be inside 'options'
+        },
         "markers": get_candle_markers(plot_df, threshold)
     }]
 }], key=f"dax-{selected_date}")
