@@ -60,7 +60,7 @@ def load_data():
 
 try:
     df = load_data()
-   date_list = list(df['Date'].unique())
+    date_list = list(df['Date'].unique())
     
     # 1. Determine the target date
     if "target_date" in st.session_state:
@@ -75,8 +75,11 @@ try:
     
     # 3. Proceed with plotting
     plot_df = df[df['Date'] == selected_date].copy()
-   
     chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close'})[['time', 'open', 'high', 'low', 'close']].to_dict(orient="records")
+    
+    # ... rest of your existing code (st.title, renderLightweightCharts, etc.)
+   
+    #chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close'})[['time', 'open', 'high', 'low', 'close']].to_dict(orient="records")
    
     # ADDED DYNAMIC TITLE
     st.title(f"DAX {selected_date} - 5 Minute Chart")
