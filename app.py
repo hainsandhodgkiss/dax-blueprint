@@ -44,23 +44,31 @@ df = load_data()
 selected_date = st.sidebar.selectbox("Select Date", df['Date'].unique())
 plot_df = df[df['Date'] == selected_date].copy()
 
-# --- NEW TIMEFRAME TOGGLE ---
-# --- IMPROVED TIMEFRAME TOGGLE ---
+# --- TIMEFRAME & SCHOOL RUN LOGIC ---
 timeframe = st.sidebar.radio("Select Timeframe:", ["5min", "15min"], horizontal=True)
-
-# Create a copy so we don't mess up the original raw df
-working_df = plot_df.copy()
+show_school_run = st.sidebar.checkbox("Show School Run (2nd 15m candle)")
+school_run_lines = []
 
 if timeframe == "15min":
-    # Perform the resample on the copy
-    resampled = working_df.resample('15min', on='dt_obj').agg({
+    # 1. Resample
+    resampled = plot_df.resample('15min', on='dt_obj').agg({
         'Open': 'first', 'High': 'max', 'Low': 'min', 'Close': 'last'
     }).dropna()
     
-    # Reassign the resampled data to plot_df
+    # 2. Update plot_df
     plot_df = resampled.reset_index().rename(columns={'dt_obj': 'time'})
     plot_df['time'] = plot_df['time'].apply(lambda x: int(x.timestamp()))
     plot_df['body_size'] = (plot_df['Close'] - plot_df['Open']).abs().round(2)
+    
+    # 3. Calculate School Run Lines ONLY when we are in 15min mode
+    if show_school_run and len(plot_df) >= 2:
+        second_candle = plot_df.iloc[1]
+        sr_high = float(second_candle['High']) + 2.0
+        sr_low = float(second_candle['Low']) - 2.0
+        school_run_lines = [
+            {"price": sr_high, "color": "#ff0000", "lineWidth": 2, "lineStyle": 0, "axisLabelVisible": True, "title": "SR High"},
+            {"price": sr_low, "color": "#ff0000", "lineWidth": 2, "lineStyle": 0, "axisLabelVisible": True, "title": "SR Low"}
+        ]
 # ----------------------------
 
 chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close'})[['time', 'open', 'high', 'low', 'close']].to_dict(orient="records")
