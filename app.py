@@ -39,6 +39,7 @@ plot_df = df[df['Date'] == selected_date].copy()
 chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close'})[['time', 'open', 'high', 'low', 'close']].to_dict(orient="records")
 st.title(f"DAX {selected_date} - 5 Minute Chart")
 threshold = st.sidebar.selectbox("Show candle numbers for size over:", [10, 15, 20, 25, 30, 35, 40])
+
 renderLightweightCharts([{"chart": {"width": 1200, "height": 700}, "series": [{"type": "Candlestick", "data": chart_data, "options": get_series_options(), "markers": get_candle_markers(plot_df, threshold)}]}], key=f"dax-{selected_date}")
 
 st.sidebar.markdown("---")
@@ -46,6 +47,7 @@ st.sidebar.subheader("Data Event Playbook")
 selected_month = st.sidebar.selectbox("Select NFP Month:", list(nfp_playbook.get_nfp_data().keys()))
 event_dates = nfp_playbook.get_event_dates(selected_month)
 col1, col2, col3 = st.sidebar.columns(3)
+
 if col1.button("Pre"):
     st.session_state.target_date = event_dates['before']
     st.rerun()
