@@ -60,21 +60,25 @@ def load_data():
 
 try:
     df = load_data()
-    if selected_date is None:
-        selected_date = df['Date'].unique()[0]
-   # NEW: Check session state for a button-clicked date
-    default_date = st.session_state.get("target_date", df['Date'].unique()[0])
-    
-    # Ensure the index exists, otherwise default to 0
     date_list = list(df['Date'].unique())
-    default_idx = date_list.index(default_date) if default_date in date_list else 0
     
+    # 1. Determine the date to show
+    # If a button was clicked (target_date in session), use it. 
+    # Otherwise, default to the first date in the list.
+    if "target_date" in st.session_state:
+        selected_date = st.session_state.target_date
+        # Clear it immediately so the selectbox works normally next time
+        del st.session_state.target_date
+    else:
+        selected_date = date_list[0]
+        
+    # 2. Sync the selectbox with the determined date
+    default_idx = date_list.index(selected_date) if selected_date in date_list else 0
     selected_date = st.sidebar.selectbox("Select Date", date_list, index=default_idx)
     
-    # NEW: Clear the trigger so the selectbox takes back control after the load
-    if "target_date" in st.session_state:
-        del st.session_state.target_date
+    # 3. Proceed with plotting
     plot_df = df[df['Date'] == selected_date].copy()
+   
     chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close'})[['time', 'open', 'high', 'low', 'close']].to_dict(orient="records")
    
     # ADDED DYNAMIC TITLE
