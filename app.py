@@ -13,11 +13,11 @@ def get_series_options():
         "lastValueVisible": True
     }
 
-def get_candle_markers(plot_df):
+def get_candle_markers(plot_df, threshold):
     markers = []
     for _, row in plot_df.iterrows():
-        # Only show markers for candles with body_size 20 or greater
-        if row['body_size'] >= 20:
+        # Filter based on the dynamic threshold selected by the user
+        if row['body_size'] >= threshold:
             markers.append({
                 "time": row['time'],
                 "position": 'aboveBar',
@@ -46,6 +46,12 @@ try:
     plot_df = df[df['Date'] == selected_date].copy()
     chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close'})[['time', 'open', 'high', 'low', 'close']].to_dict(orient="records")
     
+    # Sidebar control
+    threshold = st.sidebar.selectbox(
+        "Show candle numbers for size over:",
+        [10, 15, 20, 25, 30, 35, 40]
+    )
+    
     renderLightweightCharts([{
         "chart": {
             "width": 1200, "height":700,
@@ -55,7 +61,7 @@ try:
             "type": "Candlestick",
             "data": chart_data,
             "options": get_series_options(),
-            "markers": get_candle_markers(plot_df)
+            "markers": get_candle_markers(plot_df, threshold)
         }]
     }], key=f"dax-{selected_date}")
 except Exception as e:
