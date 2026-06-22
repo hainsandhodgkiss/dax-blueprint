@@ -60,6 +60,8 @@ def load_data():
 
 try:
     df = load_data()
+    if selected_date is None:
+        selected_date = df['Date'].unique()[0]
    # NEW: Check session state for a button-clicked date
     default_date = st.session_state.get("target_date", df['Date'].unique()[0])
     
