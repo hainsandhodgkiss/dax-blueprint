@@ -46,8 +46,8 @@ try:
     
     renderLightweightCharts([{
         "chart": {
-            "width": 1000, "height": 500,
-            "timeScale": {"timeVisible": True, "secondsVisible": False, "barSpacing": 15}
+            "width": 1400, "height":700,
+            "timeScale": {"timeVisible": True, "secondsVisible": False, "barSpacing": 40}
         },
         "series": [{
             "type": "Candlestick",
