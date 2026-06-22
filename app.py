@@ -39,6 +39,7 @@ def load_data():
     df['time'] = df['dt_obj'].apply(lambda x: int(x.timestamp()))
     return df.dropna()
 
+# Logic wrapped correctly in the try block
 try:
     df = load_data()
     selected_date = st.sidebar.selectbox("Select Date", df['Date'].unique())
@@ -50,7 +51,6 @@ try:
     threshold = st.sidebar.selectbox("Show candle numbers for size over:", [10, 15, 20, 25, 30, 35, 40])
     st.sidebar.markdown("---")
     
-    # Everything below is now correctly indented inside the try block
     st.sidebar.subheader("Data Event Playbook")
     selected_month = st.sidebar.selectbox("Select NFP Month:", list(nfp_playbook.get_nfp_data().keys()))
 
