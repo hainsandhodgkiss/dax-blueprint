@@ -27,6 +27,16 @@ def get_candle_markers(plot_df, threshold):
             })
     return markers
 
+def add_snapshot_button():
+    # Streamlit doesn't natively "take a screenshot" of a JS component, 
+    # so we provide a link to the user to use their browser's print-to-file
+    # or use a screenshot utility.
+    st.sidebar.info("Tip: Use 'Print Screen' or Browser 'Save Page' to capture.")
+    if st.sidebar.button("Save chart as JPEG"):
+        st.sidebar.warning("Note: Lightweight Charts are rendered in a canvas. "
+                           "Right-click the chart area and select 'Save Image As' "
+                           "to download the current view directly.")
+                           
 st.set_page_config(layout="wide")
 
 @st.cache_data
@@ -51,6 +61,8 @@ try:
         "Show candle numbers for size over:",
         [10, 15, 20, 25, 30, 35, 40]
     )
+    # ADDED BUTTON
+    add_snapshot_button()
     
     renderLightweightCharts([{
         "chart": {
