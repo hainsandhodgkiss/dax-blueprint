@@ -61,14 +61,19 @@ def load_data():
 try:
     df = load_data()
    date_list = list(df['Date'].unique())
-
-    # Get the target from session state (if radio was clicked) or default to the first date
-    target = st.session_state.get("target_date", date_list[0])
     
-    # Sync the selectbox index
+    # 1. Determine the target date
+    if "target_date" in st.session_state:
+        target = st.session_state.target_date
+        del st.session_state.target_date
+    else:
+        target = date_list[0]
+        
+    # 2. Sync the selectbox
     default_idx = date_list.index(target) if target in date_list else 0
     selected_date = st.sidebar.selectbox("Select Date", date_list, index=default_idx)
     
+    # 3. Proceed with plotting
     plot_df = df[df['Date'] == selected_date].copy()
    
     chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close'})[['time', 'open', 'high', 'low', 'close']].to_dict(orient="records")
