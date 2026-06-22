@@ -81,18 +81,22 @@ chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low
 
 # 4. RENDER
 st.title(f"DAX {selected_date} - {timeframe} Chart")
+
+# Ensure priceLines is properly structured
+chart_series = {
+    "type": "Candlestick",
+    "data": chart_data,
+    "options": {
+        **get_series_options()
+    },
+    "priceLines": school_run_lines, # Move this outside of 'options' to the top level of series
+    "markers": get_candle_markers(plot_df, threshold)
+}
+
 renderLightweightCharts([{
     "chart": {
         "width": 1200, "height": 700,
         "timeScale": {"timeVisible": True, "secondsVisible": False, "barSpacing": 40}
     },
-    "series": [{
-        "type": "Candlestick",
-        "data": chart_data,
-        "options": {
-            **get_series_options(), 
-            "priceLines": school_run_lines
-        },
-        "markers": get_candle_markers(plot_df, threshold) # Now threshold is defined!
-    }]
+    "series": [chart_series]
 }], key=f"dax-{selected_date}-{timeframe}")
