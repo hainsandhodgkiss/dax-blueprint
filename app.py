@@ -82,8 +82,19 @@ chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low
 # 4. RENDER
 st.title(f"DAX {selected_date} - {timeframe} Chart")
 
-# Render the chart and capture the API object
-chart = renderLightweightCharts([{
+# Format the lines explicitly
+formatted_lines = [
+    {
+        "price": float(line['price']),
+        "color": line['color'],
+        "lineWidth": line['lineWidth'],
+        "lineStyle": line['lineStyle'],
+        "axisLabelVisible": True,
+        "title": line['title']
+    } for line in school_run_lines
+]
+
+renderLightweightCharts([{
     "chart": {
         "width": 1200, "height": 700,
         "timeScale": {"timeVisible": True, "secondsVisible": False, "barSpacing": 40}
@@ -91,18 +102,10 @@ chart = renderLightweightCharts([{
     "series": [{
         "type": "Candlestick",
         "data": chart_data,
-        "options": {**get_series_options()},
+        "options": {
+            **get_series_options(),
+            "priceLines": formatted_lines  # This is the correct standard placement
+        },
         "markers": get_candle_markers(plot_df, threshold)
     }]
 }], key=f"dax-{selected_date}-{timeframe}")
-
-# Now, force the lines using the API object if lines exist
-if show_school_run and len(school_run_lines) > 0:
-    for line in school_run_lines:
-        chart.horizontal_line(
-            price=line['price'],
-            color=line['color'],
-            width=line['lineWidth'],
-            style=line['lineStyle'],
-            label=line['title']
-        )
