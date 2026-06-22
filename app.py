@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 from streamlit_lightweight_charts import renderLightweightCharts
 
+# --- MODULAR ADD-ONS ---
+
 def get_series_options():
     return {
         "upColor": "#26a69a",
@@ -24,6 +26,8 @@ def get_candle_markers(plot_df):
             "text": str(row['body_size'])
         })
     return markers
+
+# --- MAIN CORE CODE ---
 
 @st.cache_data
 def load_data():
@@ -49,7 +53,13 @@ try:
             "chart": {
                 "width": 1000, 
                 "height": 500,
-                "timeScale": {"timeVisible": True, "secondsVisible": False, "barSpacing": 15}
+                # Increased spacing to prevent bunching
+                "timeScale": {
+                    "timeVisible": True, 
+                    "secondsVisible": False, 
+                    "barSpacing": 25, 
+                    "minBarSpacing": 15
+                }
             },
             "series": [{
                 "type": "Candlestick",
@@ -59,5 +69,6 @@ try:
             }]
         }
     ], key=f"dax-{selected_date}")
+
 except Exception as e:
     st.error(f"Render Error: {e}")
