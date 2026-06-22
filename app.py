@@ -53,7 +53,18 @@ def load_data():
 
 try:
     df = load_data()
-    selected_date = st.sidebar.selectbox("Select Date", df['Date'].unique())
+   # NEW: Check session state for a button-clicked date
+    default_date = st.session_state.get("target_date", df['Date'].unique()[0])
+    
+    # Ensure the index exists, otherwise default to 0
+    date_list = list(df['Date'].unique())
+    default_idx = date_list.index(default_date) if default_date in date_list else 0
+    
+    selected_date = st.sidebar.selectbox("Select Date", date_list, index=default_idx)
+    
+    # NEW: Clear the trigger so the selectbox takes back control after the load
+    if "target_date" in st.session_state:
+        del st.session_state.target_date
     plot_df = df[df['Date'] == selected_date].copy()
     chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close'})[['time', 'open', 'high', 'low', 'close']].to_dict(orient="records")
    
@@ -83,15 +94,23 @@ try:
     }], key=f"dax-{selected_date}")
 except Exception as e:
     st.error(f"Render Error: {e}")
-    # 2. Your NEW Playbook section goes here, safely outside the Try/Except
-st.sidebar.markdown("---")
+   st.sidebar.markdown("---")
 st.sidebar.subheader("Data Event Playbook")
 selected_month = st.sidebar.selectbox("Select NFP Month:", list(nfp_playbook.get_nfp_data().keys()))
 
 if st.sidebar.button("Load NFP Window"):
-    # This logic handles your pre/post data release research
     event_dates = nfp_playbook.get_event_dates(selected_month)
-    st.sidebar.write(f"Analyzing {selected_month}:")
-    st.sidebar.write(f"Pre-NFP: {event_dates['before']}")
-    st.sidebar.write(f"NFP Day: {event_dates['nfp']}")
-    st.sidebar.write(f"Post-NFP: {event_dates['after']}")
+    st.sidebar.write(f"**Analyzing {selected_month}:**")
+    
+    # Create clickable buttons for each date
+    if st.sidebar.button(f"Pre-NFP: {event_dates['before']}"):
+        st.session_state.target_date = event_dates['before']
+        st.rerun()
+        
+    if st.sidebar.button(f"NFP Day: {event_dates['nfp']}"):
+        st.session_state.target_date = event_dates['nfp']
+        st.rerun()
+        
+    if st.sidebar.button(f"Post-NFP: {event_dates['after']}"):
+        st.session_state.target_date = event_dates['after']
+        st.rerun()
