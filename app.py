@@ -15,15 +15,19 @@ def get_series_options():
 
 def get_candle_markers(plot_df):
     markers = []
+    # Calculate average body size for the current view to filter noise
+    avg_body = plot_df['body_size'].mean()
+    
     for _, row in plot_df.iterrows():
-        markers.append({
-            "time": row['time'],
-            "position": 'aboveBar',
-            "color": '#26a69a' if row['Close'] >= row['Open'] else '#ef5350',
-            "text": " ",         # Set the main text to an empty space
-            "title": str(row['body_size']) # Move the value to the title attribute
-            
-        })
+        # Only add a marker if the candle is larger than average
+        if row['body_size'] > avg_body:
+            markers.append({
+                "time": row['time'],
+                "position": 'aboveBar',
+                "color": 'transparent',
+                "shape": 'none',
+                "text": str(row['body_size'])
+            })
     return markers
 
 st.set_page_config(layout="wide")
