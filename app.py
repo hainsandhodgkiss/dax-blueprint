@@ -15,10 +15,6 @@ def get_series_options():
 
 def get_candle_markers(plot_df):
     markers = []
-   
-    # Calculate average body size for the current view to filter noise
-    def get_candle_markers(plot_df):
-    markers = []
     for _, row in plot_df.iterrows():
         # Only show markers for candles with body_size 20 or greater
         if row['body_size'] >= 20:
