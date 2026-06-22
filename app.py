@@ -80,32 +80,34 @@ if timeframe == "15min":
 chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close'})[['time', 'open', 'high', 'low', 'close']].to_dict(orient="records")
 
 # 4. RENDER
+# 4. RENDER
 st.title(f"DAX {selected_date} - {timeframe} Chart")
 
-# Format the lines explicitly
-formatted_lines = [
-    {
-        "price": float(line['price']),
-        "color": line['color'],
-        "lineWidth": line['lineWidth'],
-        "lineStyle": line['lineStyle'],
-        "axisLabelVisible": True,
-        "title": line['title']
-    } for line in school_run_lines
-]
+# We render the chart first
+chart_data_dicts = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close'})[['time', 'open', 'high', 'low', 'close']].to_dict(orient="records")
 
-renderLightweightCharts([{
+# Create the chart component
+chart = renderLightweightCharts([{
     "chart": {
         "width": 1200, "height": 700,
         "timeScale": {"timeVisible": True, "secondsVisible": False, "barSpacing": 40}
     },
     "series": [{
         "type": "Candlestick",
-        "data": chart_data,
-        "options": {
-            **get_series_options(),
-            "priceLines": formatted_lines  # This is the correct standard placement
-        },
+        "data": chart_data_dicts,
+        "options": {**get_series_options()},
         "markers": get_candle_markers(plot_df, threshold)
     }]
 }], key=f"dax-{selected_date}-{timeframe}")
+
+# Now, forcefully inject the lines using the API
+if show_school_run and timeframe == "15min" and len(school_run_lines) > 0:
+    for line in school_run_lines:
+        chart.create_price_line({
+            "price": float(line['price']),
+            "color": line['color'],
+            "lineWidth": line['lineWidth'],
+            "lineStyle": line['lineStyle'],
+            "axisLabelVisible": True,
+            "title": line['title']
+        })
