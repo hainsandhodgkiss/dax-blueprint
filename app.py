@@ -44,18 +44,33 @@ df = load_data()
 selected_date = st.sidebar.selectbox("Select Date", df['Date'].unique())
 plot_df = df[df['Date'] == selected_date].copy()
 
-# --- TIMEFRAME & SCHOOL RUN LOGIC ---
-timeframe = st.sidebar.radio("Select Timeframe:", ["5min", "15min"], horizontal=True)
+# --- DEBUGGING SCHOOL RUN LOGIC ---
 show_school_run = st.sidebar.checkbox("Show School Run (2nd 15m candle)", key="school_run_toggle")
 school_run_lines = []
 
 if timeframe == "15min":
-    # 1. Resample
+    # Perform the resample
     resampled = plot_df.resample('15min', on='dt_obj').agg({
         'Open': 'first', 'High': 'max', 'Low': 'min', 'Close': 'last'
     }).dropna()
     
-    # 2. Update plot_df
+    # CRITICAL: Debug the actual count of bars after resampling
+    st.write(f"DEBUG: Bars in 15m dataframe: {len(resampled)}")
+    
+    if show_school_run:
+        if len(resampled) >= 2:
+            second_candle = resampled.iloc[1]
+            sr_high = float(second_candle['High']) + 2.0
+            sr_low = float(second_candle['Low']) - 2.0
+            
+            school_run_lines = [
+                {"price": sr_high, "color": "#ff0000", "lineWidth": 2, "lineStyle": 0, "axisLabelVisible": True, "title": "SR High"},
+                {"price": sr_low, "color": "#ff0000", "lineWidth": 2, "lineStyle": 0, "axisLabelVisible": True, "title": "SR Low"}
+            ]
+        else:
+            st.error("Not enough 15m bars on this date to draw lines.")
+
+    # Update plot_df for rendering
     plot_df = resampled.reset_index().rename(columns={'dt_obj': 'time'})
     plot_df['time'] = plot_df['time'].apply(lambda x: int(x.timestamp()))
     plot_df['body_size'] = (plot_df['Close'] - plot_df['Open']).abs().round(2)
