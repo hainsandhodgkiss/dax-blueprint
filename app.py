@@ -1,3 +1,4 @@
+import nfp_playbook  # Import your new module
 import streamlit as st
 import pandas as pd
 from streamlit_lightweight_charts import renderLightweightCharts
@@ -64,6 +65,16 @@ try:
         "Show candle numbers for size over:",
         [10, 15, 20, 25, 30, 35, 40]
     )
+    st.sidebar.markdown("---")
+st.sidebar.subheader("Data Event Playbook")
+selected_month = st.sidebar.selectbox("Select NFP Month:", list(nfp_playbook.get_nfp_data().keys()))
+
+if st.sidebar.button("Load NFP Window"):
+    event_dates = nfp_playbook.get_event_dates(selected_month)
+    st.write(f"Analyzing {selected_month}:")
+    st.write(f"Before: {event_dates['before']} | NFP: {event_dates['nfp']} | After: {event_dates['after']}")
+    # You can now programmatically set your 'selected_date' here based on these results
+    
     # ADDED BUTTON
     add_snapshot_button()
     
