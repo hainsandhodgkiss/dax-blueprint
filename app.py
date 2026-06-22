@@ -39,15 +39,16 @@ def load_data():
     df['time'] = df['dt_obj'].apply(lambda x: int(x.timestamp()))
     return df.dropna()
 
-# LINEAR EXECUTION - NO TRY/EXCEPT BLOCK
 # LINEAR EXECUTION
 df = load_data()
 selected_date = st.sidebar.selectbox("Select Date", df['Date'].unique())
 plot_df = df[df['Date'] == selected_date].copy()
 
-# 1. UI INPUTS (Define these first!)
+# 1. UI INPUTS (Define these BEFORE the chart is rendered)
 timeframe = st.sidebar.radio("Select Timeframe:", ["5min", "15min"], horizontal=True)
 show_school_run = st.sidebar.checkbox("Show School Run (2nd 15m candle)", key="sr_toggle")
+threshold = st.sidebar.selectbox("Show candle numbers for size over:", [10, 15, 20, 25, 30, 35, 40])
+st.sidebar.markdown("---")
 
 # 2. LOGIC (Handle Resampling and Lines)
 school_run_lines = []
@@ -57,12 +58,10 @@ if timeframe == "15min":
         'Open': 'first', 'High': 'max', 'Low': 'min', 'Close': 'last'
     }).dropna()
     
-    # Update plot_df for rendering
     plot_df = resampled.reset_index().rename(columns={'dt_obj': 'time'})
     plot_df['time'] = plot_df['time'].apply(lambda x: int(x.timestamp()))
     plot_df['body_size'] = (plot_df['Close'] - plot_df['Open']).abs().round(2)
     
-    # Calculate lines here, inside the 15min block
     if show_school_run:
         if len(plot_df) >= 2:
             second_candle = plot_df.iloc[1]
@@ -76,8 +75,6 @@ chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low
 
 # 4. RENDER
 st.title(f"DAX {selected_date} - {timeframe} Chart")
-# ... (rest of your sidebar and buttons) ...
-
 renderLightweightCharts([{
     "chart": {
         "width": 1200, "height": 700,
@@ -90,6 +87,6 @@ renderLightweightCharts([{
             **get_series_options(), 
             "priceLines": school_run_lines
         },
-        "markers": get_candle_markers(plot_df, threshold)
+        "markers": get_candle_markers(plot_df, threshold) # Now threshold is defined!
     }]
-}], key=f"dax-{selected_date}-{timeframe}") # Added timeframe to key to prevent refresh bugs
+}], key=f"dax-{selected_date}-{timeframe}")
