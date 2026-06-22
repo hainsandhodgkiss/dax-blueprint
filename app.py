@@ -39,40 +39,35 @@ def load_data():
     df['time'] = df['dt_obj'].apply(lambda x: int(x.timestamp()))
     return df.dropna()
 
-# Logic wrapped correctly in the try block
-try:
-    df = load_data()
-    selected_date = st.sidebar.selectbox("Select Date", df['Date'].unique())
-    plot_df = df[df['Date'] == selected_date].copy()
-    chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close'})[['time', 'open', 'high', 'low', 'close']].to_dict(orient="records")
-    
-    st.title(f"DAX {selected_date} - 5 Minute Chart")
-    
-    threshold = st.sidebar.selectbox("Show candle numbers for size over:", [10, 15, 20, 25, 30, 35, 40])
-    st.sidebar.markdown("---")
-    
-    st.sidebar.subheader("Data Event Playbook")
-    selected_month = st.sidebar.selectbox("Select NFP Month:", list(nfp_playbook.get_nfp_data().keys()))
+# LINEAR EXECUTION - NO TRY/EXCEPT BLOCK
+df = load_data()
+selected_date = st.sidebar.selectbox("Select Date", df['Date'].unique())
+plot_df = df[df['Date'] == selected_date].copy()
+chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close'})[['time', 'open', 'high', 'low', 'close']].to_dict(orient="records")
 
-    if st.sidebar.button("Load NFP Window"):
-        event_dates = nfp_playbook.get_event_dates(selected_month)
-        st.write(f"Analyzing {selected_month}:")
-        st.write(f"Before: {event_dates['before']} | NFP: {event_dates['nfp']} | After: {event_dates['after']}")
-        
-    add_snapshot_button()
-    
-    renderLightweightCharts([{
-        "chart": {
-            "width": 1200, "height": 700,
-            "timeScale": {"timeVisible": True, "secondsVisible": False, "barSpacing": 40}
-        },
-        "series": [{
-            "type": "Candlestick",
-            "data": chart_data,
-            "options": get_series_options(),
-            "markers": get_candle_markers(plot_df, threshold)
-        }]
-    }], key=f"dax-{selected_date}")
+st.title(f"DAX {selected_date} - 5 Minute Chart")
+threshold = st.sidebar.selectbox("Show candle numbers for size over:", [10, 15, 20, 25, 30, 35, 40])
+st.sidebar.markdown("---")
 
-except Exception as e:
-    st.error(f"Render Error: {e}")
+st.sidebar.subheader("Data Event Playbook")
+selected_month = st.sidebar.selectbox("Select NFP Month:", list(nfp_playbook.get_nfp_data().keys()))
+
+if st.sidebar.button("Load NFP Window"):
+    event_dates = nfp_playbook.get_event_dates(selected_month)
+    st.write(f"Analyzing {selected_month}:")
+    st.write(f"Before: {event_dates['before']} | NFP: {event_dates['nfp']} | After: {event_dates['after']}")
+
+add_snapshot_button()
+
+renderLightweightCharts([{
+    "chart": {
+        "width": 1200, "height": 700,
+        "timeScale": {"timeVisible": True, "secondsVisible": False, "barSpacing": 40}
+    },
+    "series": [{
+        "type": "Candlestick",
+        "data": chart_data,
+        "options": get_series_options(),
+        "markers": get_candle_markers(plot_df, threshold)
+    }]
+}], key=f"dax-{selected_date}")
