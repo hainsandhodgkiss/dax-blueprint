@@ -22,7 +22,7 @@ def get_candle_markers(plot_df):
             "color": '#26a69a' if row['Close'] >= row['Open'] else '#ef5350',
             "text": str(row['body_size']),
             "textStyle": {
-                "fontSize": 9,
+                "fontSize": 8,
                 "fontWeight": "bold"
             }
         })
