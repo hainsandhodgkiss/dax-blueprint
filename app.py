@@ -40,92 +40,44 @@ def load_data():
     return df.dropna()
 
 # LINEAR EXECUTION - NO TRY/EXCEPT BLOCK
+# LINEAR EXECUTION
 df = load_data()
 selected_date = st.sidebar.selectbox("Select Date", df['Date'].unique())
 plot_df = df[df['Date'] == selected_date].copy()
 
-# --- DEBUGGING SCHOOL RUN LOGIC ---
-show_school_run = st.sidebar.checkbox("Show School Run (2nd 15m candle)", key="school_run_toggle")
+# 1. UI INPUTS (Define these first!)
+timeframe = st.sidebar.radio("Select Timeframe:", ["5min", "15min"], horizontal=True)
+show_school_run = st.sidebar.checkbox("Show School Run (2nd 15m candle)", key="sr_toggle")
+
+# 2. LOGIC (Handle Resampling and Lines)
 school_run_lines = []
 
 if timeframe == "15min":
-    # Perform the resample
     resampled = plot_df.resample('15min', on='dt_obj').agg({
         'Open': 'first', 'High': 'max', 'Low': 'min', 'Close': 'last'
     }).dropna()
     
-    # CRITICAL: Debug the actual count of bars after resampling
-    st.write(f"DEBUG: Bars in 15m dataframe: {len(resampled)}")
-    
-    if show_school_run:
-        if len(resampled) >= 2:
-            second_candle = resampled.iloc[1]
-            sr_high = float(second_candle['High']) + 2.0
-            sr_low = float(second_candle['Low']) - 2.0
-            
-            school_run_lines = [
-                {"price": sr_high, "color": "#ff0000", "lineWidth": 2, "lineStyle": 0, "axisLabelVisible": True, "title": "SR High"},
-                {"price": sr_low, "color": "#ff0000", "lineWidth": 2, "lineStyle": 0, "axisLabelVisible": True, "title": "SR Low"}
-            ]
-        else:
-            st.error("Not enough 15m bars on this date to draw lines.")
-
     # Update plot_df for rendering
     plot_df = resampled.reset_index().rename(columns={'dt_obj': 'time'})
     plot_df['time'] = plot_df['time'].apply(lambda x: int(x.timestamp()))
     plot_df['body_size'] = (plot_df['Close'] - plot_df['Open']).abs().round(2)
     
-    # 3. Calculate School Run Lines ONLY when we are in 15min mode
-    if show_school_run and len(plot_df) >= 2:
-        second_candle = plot_df.iloc[1]
-        sr_high = float(second_candle['High']) + 2.0
-        sr_low = float(second_candle['Low']) - 2.0
-        school_run_lines = [
-            {"price": sr_high, "color": "#ff0000", "lineWidth": 2, "lineStyle": 0, "axisLabelVisible": True, "title": "SR High"},
-            {"price": sr_low, "color": "#ff0000", "lineWidth": 2, "lineStyle": 0, "axisLabelVisible": True, "title": "SR Low"}
-        ]
-# ----------------------------
+    # Calculate lines here, inside the 15min block
+    if show_school_run:
+        if len(plot_df) >= 2:
+            second_candle = plot_df.iloc[1]
+            school_run_lines = [
+                {"price": float(second_candle['High']) + 2.0, "color": "#ff0000", "lineWidth": 2, "lineStyle": 0, "axisLabelVisible": True, "title": "SR High"},
+                {"price": float(second_candle['Low']) - 2.0, "color": "#ff0000", "lineWidth": 2, "lineStyle": 0, "axisLabelVisible": True, "title": "SR Low"}
+            ]
 
+# 3. PREPARE CHART DATA
 chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close'})[['time', 'open', 'high', 'low', 'close']].to_dict(orient="records")
 
-# Fixed: Only one title showing the active timeframe
+# 4. RENDER
 st.title(f"DAX {selected_date} - {timeframe} Chart")
-threshold = st.sidebar.selectbox("Show candle numbers for size over:", [10, 15, 20, 25, 30, 35, 40])
-st.sidebar.markdown("---")
+# ... (rest of your sidebar and buttons) ...
 
-st.sidebar.subheader("Data Event Playbook")
-selected_month = st.sidebar.selectbox("Select NFP Month:", list(nfp_playbook.get_nfp_data().keys()))
-
-if st.sidebar.button("Load NFP Window"):
-    event_dates = nfp_playbook.get_event_dates(selected_month)
-    st.write(f"Analyzing {selected_month}:")
-    st.write(f"Before: {event_dates['before']} | NFP: {event_dates['nfp']} | After: {event_dates['after']}")
-
-add_snapshot_button()
-
-# --- SCHOOL RUN LOGIC ---
-# --- DEBUGGING SCHOOL RUN LOGIC ---
-show_school_run = st.sidebar.checkbox("Show School Run (2nd 15m candle)")
-school_run_lines = []
-
-if show_school_run and timeframe == "15min":
-    # Let's see what's actually in our plot_df
-    st.write(f"DEBUG: Candles available after resample: {len(plot_df)}")
-    
-    if len(plot_df) >= 2:
-        second_candle = plot_df.iloc[1] 
-        sr_high = float(second_candle['High']) + 2.0
-        sr_low = float(second_candle['Low']) - 2.0
-        
-        school_run_lines = [
-            {"price": sr_high, "color": "#ff0000", "lineWidth": 2, "lineStyle": 0, "axisLabelVisible": True, "title": "SR High"},
-            {"price": sr_low, "color": "#ff0000", "lineWidth": 2, "lineStyle": 0, "axisLabelVisible": True, "title": "SR Low"}
-        ]
-    else:
-        st.error("Not enough 15m candles to calculate School Run!")
-# --------------------------------
-# -------------------------
-st.write(f"DEBUG: School Run Lines: {school_run_lines}")
 renderLightweightCharts([{
     "chart": {
         "width": 1200, "height": 700,
@@ -136,8 +88,8 @@ renderLightweightCharts([{
         "data": chart_data,
         "options": {
             **get_series_options(), 
-            "priceLines": school_run_lines # This must be inside 'options'
+            "priceLines": school_run_lines
         },
         "markers": get_candle_markers(plot_df, threshold)
     }]
-}], key=f"dax-{selected_date}")
+}], key=f"dax-{selected_date}-{timeframe}") # Added timeframe to key to prevent refresh bugs
