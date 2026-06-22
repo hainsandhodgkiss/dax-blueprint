@@ -12,8 +12,7 @@ def get_series_options():
         "priceLineVisible": True,
         "lastValueVisible": True
     }
-   
-   def get_candle_markers(plot_df): #  <--- CALL THE ADD-ON HERE
+    def get_candle_markers(plot_df):
     markers = []
     for _, row in plot_df.iterrows():
         markers.append({
@@ -24,7 +23,7 @@ def get_series_options():
             "text": str(row['body_size'])
         })
     return markers
-    
+
 st.set_page_config(layout="wide")
 
 @st.cache_data
