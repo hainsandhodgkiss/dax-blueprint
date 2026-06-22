@@ -4,9 +4,9 @@ from streamlit_lightweight_charts import renderLightweightCharts
 
 def get_series_options():
     return {
-        "upColor": "#26a69a",
+        "upColor": "#26a63b",
         "downColor": "#ef5350",
-        "wickUpColor": "#26a69a",
+        "wickUpColor": "#26a63b",
         "wickDownColor": "#ef5350",
         "borderVisible": False,
         "priceLineVisible": True,
