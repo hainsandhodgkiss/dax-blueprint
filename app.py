@@ -62,22 +62,23 @@ try:
     df = load_data()
     date_list = list(df['Date'].unique())
     
-    # 1. Determine the date (Priority: Session State -> Default to list[0])
-    target = st.session_state.get("target_date", date_list[0])
-    
-    # 2. Force the selectbox to update to the target
-    # We find the index of our target, or default to 0
-    default_idx = date_list.index(target) if target in date_list else 0
-    
+    # 1. Determine the date to show
+    # If a button was clicked (target_date in session), use it. 
+    # Otherwise, default to the first date in the list.
+    if "target_date" in st.session_state:
+        selected_date = st.session_state.target_date
+        # Clear it immediately so the selectbox works normally next time
+        del st.session_state.target_date
+    else:
+        selected_date = date_list[0]
+        
+    # 2. Sync the selectbox with the determined date
+    default_idx = date_list.index(selected_date) if selected_date in date_list else 0
     selected_date = st.sidebar.selectbox("Select Date", date_list, index=default_idx)
     
-    # 3. If the user changed the date manually via dropdown, clear the session trigger
-    # This prevents the button-click from "getting stuck" in session state
-    if "target_date" in st.session_state:
-        del st.session_state.target_date
-        
+    # 3. Proceed with plotting
     plot_df = df[df['Date'] == selected_date].copy()
-   
+    # ... (rest of your plotting code)
     chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close'})[['time', 'open', 'high', 'low', 'close']].to_dict(orient="records")
    
     # ADDED DYNAMIC TITLE
@@ -106,23 +107,25 @@ try:
     }], key=f"dax-{selected_date}")
 except Exception as e:
     st.error(f"Render Error: {e}")
-
-# Bottom of app.py
+ # This section must start at the very beginning of the line (0 spaces)
 st.sidebar.markdown("---")
 st.sidebar.subheader("Data Event Playbook")
 selected_month = st.sidebar.selectbox("Select NFP Month:", list(nfp_playbook.get_nfp_data().keys()))
 
-event_dates = nfp_playbook.get_event_dates(selected_month)
-st.sidebar.write(f"**Analyzing {selected_month}:**")
-
-# Use radio buttons instead of regular buttons
-event_choice = st.sidebar.radio(
-    "Choose Date Window:",
-    options=[event_dates['before'], event_dates['nfp'], event_dates['after']],
-    format_func=lambda x: "Pre" if x == event_dates['before'] else ("NFP" if x == event_dates['nfp'] else "Post")
-)
-
-# If the user selects a radio option, set the session state and rerun
-if event_choice:
-    st.session_state.target_date = event_choice
-    st.rerun()
+if st.sidebar.button("Load NFP Window"):
+    event_dates = nfp_playbook.get_event_dates(selected_month)
+    st.sidebar.write(f"**Analyzing {selected_month}:**")
+    
+    col1, col2, col3 = st.sidebar.columns(3)
+    with col1:
+        if st.button("Pre"):
+            st.session_state.target_date = event_dates['before']
+            st.rerun()
+    with col2:
+        if st.button("NFP"):
+            st.session_state.target_date = event_dates['nfp']
+            st.rerun()
+    with col3:
+        if st.button("Post"):
+            st.session_state.target_date = event_dates['after']
+            st.rerun()
