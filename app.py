@@ -46,7 +46,7 @@ plot_df = df[df['Date'] == selected_date].copy()
 
 # --- TIMEFRAME & SCHOOL RUN LOGIC ---
 timeframe = st.sidebar.radio("Select Timeframe:", ["5min", "15min"], horizontal=True)
-show_school_run = st.sidebar.checkbox("Show School Run (2nd 15m candle)")
+show_school_run = st.sidebar.checkbox("Show School Run (2nd 15m candle)", key="school_run_toggle")
 school_run_lines = []
 
 if timeframe == "15min":
