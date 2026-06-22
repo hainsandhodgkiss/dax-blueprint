@@ -56,20 +56,37 @@ st.sidebar.markdown("---")
 plot_df = df[df['Date'] == selected_date].copy()
 school_run_lines = []
 sr_series = []
-if show_school_run and timeframe == "15min" and len(school_run_lines) > 0:
-    for line in school_run_lines:
-        sr_series.append({
-            "type": "Line",
-            "data": [{"time": int(t), "value": float(line['price'])} for t in plot_df['time']],
-            "options": {
-                "color": line['color'],
-                "lineWidth": line['lineWidth'],
-                "lineStyle": 2, 
-                "title": line['title'],
-                "lastValueVisible": True,
-                "priceLineVisible": True
-            }
-        })
+
+if timeframe == "15min":
+    # A. Resample and transform
+    resampled = plot_df.resample('15min', on='dt_obj').agg({
+        'Open': 'first', 'High': 'max', 'Low': 'min', 'Close': 'last'
+    }).dropna()
+    plot_df = resampled.reset_index().rename(columns={'dt_obj': 'time'})
+    plot_df['time'] = plot_df['time'].apply(lambda x: int(x.timestamp()))
+    plot_df['body_size'] = (plot_df['Close'] - plot_df['Open']).abs().round(2)
+    
+    # B. Calculate the math (The School Run levels)
+    if show_school_run and len(plot_df) >= 2:
+        second_candle = plot_df.iloc[1]
+        school_run_lines = [
+            {"price": float(second_candle['High']) + 2.0, "color": "#ff0000", "lineWidth": 2, "lineStyle": 2, "title": "SR High"},
+            {"price": float(second_candle['Low']) - 2.0, "color": "#ff0000", "lineWidth": 2, "lineStyle": 2, "title": "SR Low"}
+        ]
+        st.sidebar.write(f"Lines: High={school_run_lines[0]['price']}, Low={school_run_lines[1]['price']}")
+
+        # C. NOW build the series (Now that school_run_lines exists!)
+        for line in school_run_lines:
+            sr_series.append({
+                "type": "Line",
+                "data": [{"time": int(t), "value": float(line['price'])} for t in plot_df['time']],
+                "options": {
+                    "color": line['color'],
+                    "lineWidth": line['lineWidth'],
+                    "lineStyle": line['lineStyle'],
+                    "title": line['title']
+                }
+            })
 # 2. Apply resampling ONLY if 15min is selected
 if timeframe == "15min":
     resampled = plot_df.resample('15min', on='dt_obj').agg({
