@@ -38,18 +38,17 @@ def load_data():
     df['time'] = df['dt_obj'].apply(lambda x: int(x.timestamp()))
     return df.dropna()
 
-# --- MAIN RENDERING ---
+# --- MAIN LOGIC ---
 df = load_data()
 date_list = list(df['Date'].unique())
 
-# Logic for target date
+# Get target from session or default to first date
 target = st.session_state.get("target_date", date_list[0])
 default_idx = date_list.index(target) if target in date_list else 0
 
-# Selectbox
 selected_date = st.sidebar.selectbox("Select Date", date_list, index=default_idx)
 
-# Clear trigger
+# Clear session state so it doesn't fight the selectbox
 if "target_date" in st.session_state:
     del st.session_state.target_date
 
@@ -71,7 +70,7 @@ try:
 except Exception as e:
     st.error(f"Render Error: {e}")
 
-# --- PLAYBOOKsssss ---
+# --- PLAYBOOK ---
 st.sidebar.markdown("---")
 st.sidebar.subheader("Data Event Playbook")
 selected_month = st.sidebar.selectbox("Select NFP Month:", list(nfp_playbook.get_nfp_data().keys()))
