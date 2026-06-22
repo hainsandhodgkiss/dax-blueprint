@@ -51,6 +51,17 @@ try:
                     "lastValueVisible": True
                 }
             }]
+            {
+    "type": "Histogram",
+    "data": [
+        {"time": row['time'], "value": row['body_size'], "color": "rgba(255, 255, 255, 0.2)"} 
+        for _, row in plot_df.iterrows()
+    ],
+    "options": {
+        "priceFormat": {"type": "volume"},
+        "priceScaleId": "overlay" # This keeps it independent of your price axis
+    }
+}
         }
     ], key=f"dax-{selected_date}")
 except Exception as e:
