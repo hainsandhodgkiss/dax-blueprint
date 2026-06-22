@@ -60,21 +60,26 @@ def load_data():
 
 try:
     df = load_data()
-   # NEW: Check session state for a button-clicked date
-    default_date = st.session_state.get("target_date", df['Date'].unique()[0])
-    
-    # Ensure the index exists, otherwise default to 0
+   try:
+    df = load_data()
     date_list = list(df['Date'].unique())
-    default_idx = date_list.index(default_date) if default_date in date_list else 0
     
+    # 1. Determine the target date
+    if "target_date" in st.session_state:
+        target = st.session_state.target_date
+        del st.session_state.target_date
+    else:
+        target = date_list[0]
+        
+    # 2. Sync the selectbox
+    default_idx = date_list.index(target) if target in date_list else 0
     selected_date = st.sidebar.selectbox("Select Date", date_list, index=default_idx)
     
-    # NEW: Clear the trigger so the selectbox takes back control after the load
-    if "target_date" in st.session_state:
-        del st.session_state.target_date
+    # 3. Proceed with plotting
     plot_df = df[df['Date'] == selected_date].copy()
     chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close'})[['time', 'open', 'high', 'low', 'close']].to_dict(orient="records")
-   
+    
+    # ... rest of your existing code (st.title, renderLightweightCharts, etc.)
     # ADDED DYNAMIC TITLE
     st.title(f"DAX {selected_date} - 5 Minute Chart")
     
