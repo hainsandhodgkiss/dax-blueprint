@@ -25,7 +25,7 @@ def load_data():
     df['dt_obj'] = pd.to_datetime(df['Date'] + ' ' + df['Time'], dayfirst=True)
     df['time'] = df['dt_obj'].apply(lambda x: int(x.timestamp()))
     return df.dropna()
-
+#ss
 df = load_data()
 date_list = list(df['Date'].unique())
 target = st.session_state.get("target_date", date_list[0])
