@@ -58,8 +58,6 @@ def load_data():
     df['time'] = df['dt_obj'].apply(lambda x: int(x.timestamp()))
     return df.dropna()
 
-try:
-    df = load_data()
    try:
     df = load_data()
     date_list = list(df['Date'].unique())
