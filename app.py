@@ -45,22 +45,19 @@ selected_date = st.sidebar.selectbox("Select Date", df['Date'].unique())
 plot_df = df[df['Date'] == selected_date].copy()
 
 # --- NEW TIMEFRAME TOGGLE ---
-timeframe = st.sidebar.selectbox("Select Timeframe", ["5min", "15min"])
+timeframe = st.sidebar.radio("Select Timeframe:", ["5min", "15min"], horizontal=True)
 
 if timeframe == "15min":
-    # Resample to 15-minute intervals
     resampled = plot_df.resample('15T', on='dt_obj').agg({
         'Open': 'first', 'High': 'max', 'Low': 'min', 'Close': 'last'
     }).dropna()
-    # Update plot_df for the chart rendering
     plot_df = resampled.reset_index().rename(columns={'dt_obj': 'time'})
     plot_df['time'] = plot_df['time'].apply(lambda x: int(x.timestamp()))
-    # Re-calculate body_size for the markers
     plot_df['body_size'] = (plot_df['Close'] - plot_df['Open']).abs().round(2)
-# ----------------------------
 
 chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close'})[['time', 'open', 'high', 'low', 'close']].to_dict(orient="records")
 
+# Fixed: Only one title showing the active timeframe
 st.title(f"DAX {selected_date} - {timeframe} Chart")
 st.title(f"DAX {selected_date} - 5 Minute Chart")
 threshold = st.sidebar.selectbox("Show candle numbers for size over:", [10, 15, 20, 25, 30, 35, 40])
