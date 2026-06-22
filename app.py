@@ -60,28 +60,20 @@ def load_data():
 
 try:
     df = load_data()
-    ddate_list = list(df['Date'].unique())
+    date_list = list(df['Date'].unique())
     
     # 1. Determine the target date
     if "target_date" in st.session_state:
         target = st.session_state.target_date
         del st.session_state.target_date
-        # Create a unique key that changes when the target changes
-        select_key = f"select_{target}" 
     else:
         target = date_list[0]
-        select_key = "select_default"
-
-    # 2. Force the selectbox to update
+        
+    # 2. Sync the selectbox
     default_idx = date_list.index(target) if target in date_list else 0
-    selected_date = st.sidebar.selectbox(
-        "Select Date", 
-        date_list, 
-        index=default_idx, 
-        key=select_key  # This forces the widget to re-render
-    )
+    selected_date = st.sidebar.selectbox("Select Date", date_list, index=default_idx)
     
-    # 3. Plotting
+    # 3. Proceed with plotting
     plot_df = df[df['Date'] == selected_date].copy()
     chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close'})[['time', 'open', 'high', 'low', 'close']].to_dict(orient="records")
     
