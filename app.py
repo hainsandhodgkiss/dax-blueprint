@@ -64,7 +64,6 @@ chart_data = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low
 
 # Fixed: Only one title showing the active timeframe
 st.title(f"DAX {selected_date} - {timeframe} Chart")
-st.title(f"DAX {selected_date} - 5 Minute Chart")
 threshold = st.sidebar.selectbox("Show candle numbers for size over:", [10, 15, 20, 25, 30, 35, 40])
 st.sidebar.markdown("---")
 
