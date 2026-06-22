@@ -2,6 +2,17 @@ import streamlit as st
 import pandas as pd
 from streamlit_lightweight_charts import renderLightweightCharts
 
+def get_series_options():
+    return {
+        "upColor": "#26a69a",
+        "downColor": "#ef5350",
+        "wickUpColor": "#26a69a",
+        "wickDownColor": "#ef5350",
+        "borderVisible": False,
+        "priceLineVisible": True,
+        "lastValueVisible": True
+    }
+    
 st.set_page_config(layout="wide")
 
 @st.cache_data
@@ -46,10 +57,7 @@ try:
             "series": [{
                 "type": "Candlestick",
                 "data": chart_data,
-                "options": {
-                    "priceLineVisible": True,
-                    "lastValueVisible": True
-                }
+                "options": get_series_options() # CALL THE MODULAR ADD-ON HERE
             }]
             
         }
