@@ -82,16 +82,22 @@ show_school_run = st.sidebar.checkbox("Show School Run (2nd 15m candle)")
 school_run_lines = []
 
 if show_school_run and timeframe == "15min":
-    # Ensure we have at least 2 candles
+    # Let's inspect the length to verify
     if len(plot_df) >= 2:
-        second_candle = plot_df.iloc[1] # Index 1 is the 2nd candle
-        sr_high = float(second_candle['High'])
-        sr_low = float(second_candle['Low'])
+        # Index 1 is the 2nd candle in the resampled list
+        second_candle = plot_df.iloc[1] 
+        
+        # 2-point offset logic: High + 2, Low - 2
+        sr_high = float(second_candle['High']) + 2.0
+        sr_low = float(second_candle['Low']) - 2.0
         
         school_run_lines = [
-            {"price": sr_high, "color": "red", "lineWidth": 2, "lineStyle": 0, "axisLabelVisible": True, "title": "SR High"},
-            {"price": sr_low, "color": "red", "lineWidth": 2, "lineStyle": 0, "axisLabelVisible": True, "title": "SR Low"}
+            {"price": sr_high, "color": "#ff0000", "lineWidth": 2, "lineStyle": 0, "axisLabelVisible": True, "title": "SR High +2"},
+            {"price": sr_low, "color": "#ff0000", "lineWidth": 2, "lineStyle": 0, "axisLabelVisible": True, "title": "SR Low -2"}
         ]
+    else:
+        st.warning(f"Not enough data to calculate School Run. Current candles: {len(plot_df)}")
+# --------------------------------
 # -------------------------
 st.write(f"DEBUG: School Run Lines: {school_run_lines}")
 renderLightweightCharts([{
