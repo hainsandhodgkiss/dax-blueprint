@@ -88,7 +88,8 @@ if timeframe == "15min":
                     "color": line['color'],
                     "lineWidth": line['lineWidth'],
                     "lineStyle": 2, 
-                    "title": line['title']
+                    "title": line['title'],
+                    "priceScaleId": "right"  # <--- ADD THIS
                 }
             })
         st.sidebar.write(f"Lines: High={school_run_lines[0]['price']}, Low={school_run_lines[1]['price']}")
@@ -110,7 +111,11 @@ chart_data_dicts = plot_df.rename(columns={'Open': 'open', 'High': 'high', 'Low'
 chart = renderLightweightCharts([{
     "chart": {
         "width": 1200, "height": 700,
-        "timeScale": {"timeVisible": True, "secondsVisible": False, "barSpacing": 40}
+        "timeScale": {"timeVisible": True, "secondsVisible": False, "barSpacing": 40},
+        "rightPriceScale": {  # <--- ADD THIS BLOCK
+            "visible": True,
+            "entireTextOnly": True,
+        }
     },
     "series": [
         {
